@@ -1,77 +1,73 @@
-# UdyogSetu (Vibecode)
+# UdyogSetu: Smart Regulatory Planning & Compliance Gateway
 
-## Smart Regulatory Planning & Cognitive Compliance Gateway for SIH26130
+UdyogSetu is a comprehensive Smart Regulatory Planning & Cognitive Compliance Gateway designed specifically for MSMEs (Micro, Small & Medium Enterprises) in India. It acts as a bridge between entrepreneurs and government departments, streamlining the complex process of obtaining multiple approvals, clearances, and licenses required to start and operate a business.
 
-### Overview
-UdyogSetu is an intelligent middleware solution designed to solve the cognitive bottleneck in the Maharashtra industrial approval workflow. While the state's MAITRI 2.0 portal successfully digitizes document routing, human officers are overwhelmed by the statutory mandate to approve green/orange category industries within 48 hours under the Maha Parwana initiative.
+## 🚀 Key Features
 
-UdyogSetu acts as an algorithmic compiler, validating engineering plans, administrative PDFs, and legal workflows before submission. This ensures officers only receive pre-verified, deterministic compliance reports, allowing them to meet their Service Level Agreements (SLAs).
+* **Intelligent Regulatory Roadmap:** Auto-generates a personalized, step-by-step regulatory roadmap based on the business type, sector, and location.
+* **Document Management with OCR Extraction:** Seamlessly upload required documents (Aadhaar, PAN, GST, etc.). The system uses Tesseract OCR to automatically extract text and verify document authenticity.
+* **Smart Role-Based Access Control (RBAC):** Distinct workflows for Entrepreneurs and Government Officers. Entrepreneurs manage their profiles and submit applications, while Officers have a dedicated dashboard to review, approve, or reject submissions.
+* **SLA & Timeline Tracking:** Real-time countdown timers for application reviews based on the MRTPS Act (Maha Parwana 48-hour guarantee), ensuring accountability and transparency.
+* **Digital Certificates:** Auto-generates verifiable digital approval certificates with QR codes upon successful clearance by the officer.
+* **AI Compliance Assistant:** A built-in chatbot powered by a knowledge base to answer compliance queries, guide users through forms, and explain regulatory requirements.
+* **Government Scheme Discovery:** A dedicated module for entrepreneurs to browse, filter, and check their eligibility for various MSME schemes.
 
-### Core Features
-**1. Zero-Entry Entity Verification Gateway (Auth)**
-Eliminates redundant data entry across 20+ departmental forms by fetching verified business entity data (PAN, GSTIN, DigiLocker incorporation documents) autonomously. Features dual-role login for both Entrepreneurs and Department Officers.
+## 💻 Tech Stack
 
-**2. Topological Regulatory Dependency Engine (Roadmap)**
-Generates a personalized, interactive Directed Acyclic Graph (DAG) based on initial business parameters (e.g., Red/Orange/Green category, investment size). It maps out sequential blockers and visualizes the fastest legal path for parallel approvals, completely replacing static, confusing checklists.
+**Frontend:**
+* React.js (Vite)
+* Tailwind CSS
+* Framer Motion (Animations)
+* Recharts (Data Visualization)
+* Lucide React (Icons)
 
-**3. Multimodal Administrative Document Extractor (OCR)**
-Utilizes OCR and language models to process unstructured, text-heavy administrative submissions. It extracts structured entities from complex tables and multi-column formats to auto-fill future compliance requirements.
+**Backend:**
+* Node.js
+* Express.js
+* MongoDB & Mongoose (Database)
+* Tesseract.js (Optical Character Recognition)
+* Multer (File Upload Handling)
 
-**4. Officer Verification Dashboard & Insights**
-A dedicated portal for government officers to receive and review applications that have reached 100% system accuracy. It features a "Common Errors" analytics widget to identify recurring compliance failure points (e.g., missing digital signatures) for their specific department.
+## 🛠️ Local Setup Instructions
 
-**5. Deterministic Compliance Validator (RAG Chatbot)**
-Extracted data and user queries are processed against a localized knowledge base built from state statutes. This acts as an AI Copilot that can deterministically answer eligibility questions regarding government schemes and subsidies mapped to the specific industry.
+### Prerequisites
+* Node.js (v18+)
+* MongoDB (Local or Atlas URI)
 
-**6. MRTPS Act SLA Enforcer & Escalation Matrix (Reminders)**
-A backend scheduler that actively tracks application lifecycles against the statutory deadlines mandated by the Maharashtra Right to Public Services (MRTPS) Act, 2015. If a department breaches a time limit, the system automatically generates escalation alerts via email.
+### 1. Clone the repository
+```bash
+git clone https://github.com/pranavhegde699-byte/SIH2026.git
+cd SIH2026
+```
+
+### 2. Setup the Backend
+```bash
+cd server
+npm install
+```
+Create a `.env` file in the `server` directory and add your environment variables (e.g., `MONGO_URI`, `PORT=5000`).
+```bash
+npm run dev
+```
+
+### 3. Setup the Frontend
+Open a new terminal and navigate to the client folder:
+```bash
+cd client
+npm install
+```
+Create a `.env` file in the `client` directory (if needed, e.g., `VITE_API_URL=http://localhost:5000`).
+```bash
+npm run dev
+```
+
+### 4. Access the Application
+Open your browser and navigate to `http://localhost:5173`.
+
+## 👥 User Roles
+
+* **Entrepreneur:** Registers their business, views the required roadmap, uploads necessary documents, and submits applications for official review.
+* **Officer:** Logs in to view a dashboard of submitted applications categorized by department. They can review uploaded documents and either approve or reject the application.
 
 ---
-
-### Excluded Features (Scope & Feasibility Limits)
-To ensure a fully functional and legally compliant prototype within the hackathon timeframe, the following originally proposed features were excluded:
-* **Live MAITRI 2.0 Integration**: Direct bidirectional API access to live production state portals is firewall-blocked; the project utilizes local mock states for demonstration.
-* **Vector-Geometric CAD Pre-Scrutiny Engine**: Excluded due to the complexity of parsing geometric CAD layers (ezdxf) within a 36-hour build window.
-* **Regulatory Scraper Alerts**: Excluded as parsing unstructured, inconsistent Indian legal gazettes via automated web scraping is too volatile.
-
----
-
-### Tech Stack
-* **Frontend**: React.js, Tailwind CSS, Vite
-* **Backend**: Node.js / Express
-* **Database**: MongoDB Atlas (User State, Rules Engine, Schemes)
-* **Intelligence**: Google Gemini (RAG, Embeddings, Chatbot)
-
----
-
-### Setup & Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   ```
-
-2. **Database Setup**
-   Ensure you have a MongoDB connection string. Add it to `server/.env`:
-   ```
-   MONGODB_URI=your_mongo_url
-   GEMINI_API_KEY=your_gemini_key
-   PORT=5000
-   ```
-
-3. **Seed Data**
-   ```bash
-   cd server
-   npm run seed        # Seeds approvals and schemes
-   npm run build-kb    # Builds RAG knowledge base
-   npm run seed-demo   # Creates realistic demo profiles
-   ```
-
-4. **Start Servers**
-   ```bash
-   # Terminal 1 (Backend)
-   cd server && npm run dev
-   
-   # Terminal 2 (Frontend)
-   cd client && npm run dev
-   ```
+*Developed for Smart India Hackathon (SIH)*
