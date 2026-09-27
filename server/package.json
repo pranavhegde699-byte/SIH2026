@@ -1,0 +1,30 @@
+{
+  "name": "udyogsetu-server",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "seed": "node seed/seedApprovals.js && node seed/seedSchemes.js",
+    "seed-demo": "node seed/seedDemoProfiles.js",
+    "build-kb": "node scripts/buildKnowledgeBase.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^8.7.0",
+    "mongoose": "^8.3.2",
+    "multer": "^2.4.0",
+    "node-cron": "^4.6.0",
+    "nodemailer": "^10.0.10",
+    "pdf-parse": "^1.1.1",
+    "pdfkit": "^0.20.2",
+    "qrcode": "^1.5.4",
+    "tesseract.js": "^7.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
