@@ -60,13 +60,17 @@ ${contextText || 'No relevant context found in the knowledge base.'}`;
 
     const userPrompt = userQuestion;
 
-    // Step 5: Call Gemini chat model
+    // Step 5: Call Gemini chat model (with fallback)
     const genAI = getGenAI();
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' });
-
-    const result = await model.generateContent(
-      systemPrompt + '\n\nUser Question: ' + userPrompt
-    );
+    let result;
+    try {
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      result = await model.generateContent(systemPrompt + '\n\nUser Question: ' + userPrompt);
+    } catch (modelErr) {
+      console.warn('[ChatService] gemini-1.5-flash busy or failed, falling back to gemini-2.0-flash:', modelErr.message);
+      const fallbackModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+      result = await fallbackModel.generateContent(systemPrompt + '\n\nUser Question: ' + userPrompt);
+    }
 
     const answer = result.response.text();
 
