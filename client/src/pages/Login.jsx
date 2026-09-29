@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import axios from '../api/axios';
-import { Building2, ShieldCheck, Mail, Lock, CreditCard, ArrowRight, User } from 'lucide-react';
+import { Building2, ShieldCheck, Mail, Lock, CreditCard, ArrowRight, User, Info } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(true);
-  const [role, setRole] = useState('entrepreneur'); // 'entrepreneur' or 'officer'
+  const [searchParams] = useSearchParams();
+  
+  const [isLogin, setIsLogin] = useState(() => searchParams.get('signup') !== 'true');
+  const [role, setRole] = useState(() => searchParams.get('role') || 'entrepreneur');
+  
+  const redirectTarget = searchParams.get('redirect');
+  const promptMessage = searchParams.get('message');
   
   const [formData, setFormData] = useState({
     email: '',
@@ -19,6 +24,15 @@ const Login = () => {
   
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('signup') === 'true') {
+      setIsLogin(false);
+    }
+    if (searchParams.get('role')) {
+      setRole(searchParams.get('role'));
+    }
+  }, [searchParams]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -41,11 +55,20 @@ const Login = () => {
       toast.success(isLogin ? `Welcome back, ${user.email}!` : 'Account created successfully!');
       
       if (user.role === 'entrepreneur') {
-        if (user.businessProfileId) {
+        // If registering with businessName, stash it so /start can prefill
+        if (!isLogin && formData.businessName) {
+          sessionStorage.setItem('pending_business_name', formData.businessName);
+        }
+        if (formData.panNumber) {
+          sessionStorage.setItem('pending_pan_number', formData.panNumber);
+        }
+
+        if (user.businessProfileId && redirectTarget !== '/start') {
           localStorage.setItem('udyogsetu_profileId', user.businessProfileId);
           navigate(`/dashboard/${user.businessProfileId}`);
         } else {
-          navigate('/start'); // Go to form to create profile
+          // Send to start intake
+          navigate('/start');
         }
       } else {
         localStorage.removeItem('udyogsetu_profileId');
@@ -100,6 +123,20 @@ const Login = () => {
               : 'Review and approve verified submissions.'}
           </p>
         </div>
+
+        {(promptMessage || redirectTarget === '/start') && (
+          <div className="mb-5 bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-200 p-3.5 rounded-2xl text-xs font-semibold flex items-start gap-2.5 border border-blue-200 dark:border-blue-800 shadow-sm">
+            <Info size={18} className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold">Entrepreneur Authentication Required</p>
+              <p className="font-normal text-blue-700 dark:text-blue-300 mt-0.5">
+                {promptMessage || (isLogin 
+                  ? 'Please sign in to your entrepreneur account to create or access your business profile.' 
+                  : 'Please create an entrepreneur account to begin your official business intake and compliance roadmap.')}
+              </p>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="mb-5 bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-300 p-3 rounded-xl text-xs font-semibold text-center border border-red-200 dark:border-red-800">

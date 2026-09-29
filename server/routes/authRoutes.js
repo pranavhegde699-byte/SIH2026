@@ -29,16 +29,6 @@ router.post('/register', async (req, res, next) => {
     }
 
     let businessProfileId = null;
-    if (role === 'entrepreneur' && businessName) {
-      // Auto-create a stub profile for them
-      const profile = await BusinessProfile.create({
-        businessName,
-        email,
-        industryType: 'Manufacturing', // default
-        sector: 'Micro'
-      });
-      businessProfileId = profile._id;
-    }
 
     const user = await User.create({
       email,

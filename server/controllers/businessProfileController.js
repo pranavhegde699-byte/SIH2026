@@ -1,9 +1,19 @@
 const BusinessProfile = require('../models/BusinessProfile');
+const User = require('../models/User');
 
 exports.createProfile = async (req, res) => {
   try {
-    const newProfile = new BusinessProfile(req.body);
+    const { userId, ...profileData } = req.body;
+    const newProfile = new BusinessProfile(profileData);
     const savedProfile = await newProfile.save();
+
+    // Link to User record if userId or email matches
+    if (userId) {
+      await User.findByIdAndUpdate(userId, { businessProfileId: savedProfile._id });
+    } else if (profileData.email) {
+      await User.findOneAndUpdate({ email: profileData.email }, { businessProfileId: savedProfile._id });
+    }
+
     res.status(201).json(savedProfile);
   } catch (error) {
     if (error.name === 'ValidationError') {

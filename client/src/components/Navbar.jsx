@@ -68,7 +68,7 @@ const Navbar = () => {
                 </Link>
 
                 <Link 
-                  to="/start" 
+                  to={user?.role === 'entrepreneur' ? "/start" : "/login?role=entrepreneur&redirect=/start"} 
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
                     location.pathname === '/start' ? 'text-white bg-slate-800/80 font-semibold' : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
                   }`}
@@ -145,7 +145,7 @@ const Navbar = () => {
                   to="/login" 
                   className="text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all shadow-sm shadow-blue-500/20"
                 >
-                  Sign In
+                  Sign In / Register
                 </Link>
               )}
             </div>

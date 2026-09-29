@@ -9,6 +9,14 @@ import {
 
 const LandingPage = () => {
   const savedProfileId = localStorage.getItem('udyogsetu_profileId');
+  const storedUser = localStorage.getItem('udyogsetu_user');
+  let user = null;
+  try {
+    if (storedUser) user = JSON.parse(storedUser);
+  } catch (e) {}
+
+  const isEntrepreneur = user?.role === 'entrepreneur';
+  const isOfficer = user?.role === 'officer';
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -63,30 +71,53 @@ const LandingPage = () => {
 
             {/* CTA Group */}
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                to="/start"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-base px-8 py-4 rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all hover:-translate-y-0.5 active:translate-y-0"
-              >
-                <span>Get Started — Build Roadmap</span>
-                <ArrowRight size={18} />
-              </Link>
+              {isOfficer ? (
+                <Link
+                  to="/officer-dashboard"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-base px-8 py-4 rounded-xl shadow-lg shadow-blue-500/25 transition-all hover:-translate-y-0.5 active:translate-y-0"
+                >
+                  <ShieldCheck size={18} />
+                  <span>Go to Officer Review Desk</span>
+                  <ArrowRight size={18} />
+                </Link>
+              ) : isEntrepreneur ? (
+                <>
+                  <Link
+                    to="/start"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-base px-8 py-4 rounded-xl shadow-lg shadow-blue-500/25 transition-all hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    <span>{savedProfileId ? 'Start New Business Intake' : 'Build Your Roadmap'}</span>
+                    <ArrowRight size={18} />
+                  </Link>
 
-              {savedProfileId ? (
-                <Link
-                  to={`/dashboard/${savedProfileId}`}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 text-slate-800 dark:text-slate-200 font-bold text-base px-7 py-4 rounded-xl shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all"
-                >
-                  <BarChart3 size={18} className="text-blue-600 dark:text-blue-400" />
-                  <span>Resume Active Dashboard</span>
-                </Link>
+                  {savedProfileId && (
+                    <Link
+                      to={`/dashboard/${savedProfileId}`}
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 text-slate-800 dark:text-slate-200 font-bold text-base px-7 py-4 rounded-xl shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all"
+                    >
+                      <BarChart3 size={18} className="text-blue-600 dark:text-blue-400" />
+                      <span>Resume Active Dashboard</span>
+                    </Link>
+                  )}
+                </>
               ) : (
-                <Link
-                  to="/login"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 text-slate-800 dark:text-slate-200 font-bold text-base px-7 py-4 rounded-xl shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all"
-                >
-                  <ShieldCheck size={18} className="text-blue-600 dark:text-blue-400" />
-                  <span>Officer Portal Login</span>
-                </Link>
+                <>
+                  <Link
+                    to="/login?role=entrepreneur&redirect=/start"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-base px-8 py-4 rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    <span>Get Started — Sign In / Register</span>
+                    <ArrowRight size={18} />
+                  </Link>
+
+                  <Link
+                    to="/login?role=officer"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 text-slate-800 dark:text-slate-200 font-bold text-base px-7 py-4 rounded-xl shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all"
+                  >
+                    <ShieldCheck size={18} className="text-blue-600 dark:text-blue-400" />
+                    <span>Officer Portal Login</span>
+                  </Link>
+                </>
               )}
             </motion.div>
 
@@ -207,10 +238,10 @@ const LandingPage = () => {
 
           <div className="mt-16 text-center">
             <Link
-              to="/start"
+              to={isOfficer ? "/officer-dashboard" : isEntrepreneur ? "/start" : "/login?role=entrepreneur&redirect=/start"}
               className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-8 rounded-xl shadow-md transition-all hover:scale-105"
             >
-              <span>Begin Your Regulatory Intake Now</span>
+              <span>{isOfficer ? "Go to Officer Review Desk" : isEntrepreneur ? "Begin Your Regulatory Intake Now" : "Sign In & Begin Business Intake"}</span>
               <ArrowRight size={18} />
             </Link>
           </div>

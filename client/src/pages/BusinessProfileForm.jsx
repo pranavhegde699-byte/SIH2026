@@ -5,7 +5,8 @@ import toast from 'react-hot-toast';
 import axios from '../api/axios';
 import { 
   Building2, MapPin, Users, IndianRupee, Factory, FileText, 
-  CheckCircle2, AlertCircle, Mail, BarChart3, ArrowRight, Sparkles 
+  CheckCircle2, AlertCircle, Mail, BarChart3, ArrowRight, Sparkles,
+  ShieldCheck, Lock, LogIn, UserPlus
 } from 'lucide-react';
 
 const BusinessProfileForm = () => {
@@ -25,11 +26,33 @@ const BusinessProfileForm = () => {
   const [successId, setSuccessId] = useState(null);
   const [error, setError] = useState('');
   const [savedProfileId, setSavedProfileId] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const id = localStorage.getItem('udyogsetu_profileId');
     if (id) setSavedProfileId(id);
+
+    const storedUser = localStorage.getItem('udyogsetu_user');
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser);
+        setCurrentUser(parsed);
+        const pendingBusiness = sessionStorage.getItem('pending_business_name');
+        setFormData(prev => ({
+          ...prev,
+          email: parsed.email || prev.email,
+          businessName: pendingBusiness || prev.businessName
+        }));
+        if (pendingBusiness) sessionStorage.removeItem('pending_business_name');
+      } catch (e) {
+        setCurrentUser(null);
+      }
+    } else {
+      setCurrentUser(null);
+    }
+    setAuthChecked(true);
   }, []);
 
   const handleChange = (e) => {
@@ -38,8 +61,15 @@ const BusinessProfileForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+
+    if (!currentUser || currentUser.role !== 'entrepreneur') {
+      toast.error('Please sign in or register as an entrepreneur before creating a business profile.');
+      navigate('/login?role=entrepreneur&redirect=/start');
+      return;
+    }
+
+    setLoading(true);
     setSuccessId(null);
 
     if (formData.investmentAmount && Number(formData.investmentAmount) < 0) {
@@ -58,6 +88,7 @@ const BusinessProfileForm = () => {
     try {
       const payload = {
         ...formData,
+        userId: currentUser?._id,
         investmentAmount: formData.investmentAmount ? Number(formData.investmentAmount) : undefined,
         employeeCount: formData.employeeCount ? Number(formData.employeeCount) : undefined,
         location: {
@@ -72,19 +103,18 @@ const BusinessProfileForm = () => {
       localStorage.setItem('udyogsetu_profileId', newId);
 
       // If user session is active, sync user.businessProfileId
-      const storedUser = localStorage.getItem('udyogsetu_user');
-      if (storedUser) {
+      if (currentUser) {
         try {
-          const parsed = JSON.parse(storedUser);
-          parsed.businessProfileId = newId;
-          localStorage.setItem('udyogsetu_user', JSON.stringify(parsed));
+          const updatedUser = { ...currentUser, businessProfileId: newId };
+          localStorage.setItem('udyogsetu_user', JSON.stringify(updatedUser));
+          setCurrentUser(updatedUser);
         } catch (e) {}
       }
 
       toast.success('Business profile created! Your roadmap is ready.');
       setFormData({
         businessName: '', industryType: '', sector: '', investmentAmount: '',
-        state: 'Maharashtra', district: '', employeeCount: '', businessActivity: '', email: ''
+        state: 'Maharashtra', district: '', employeeCount: '', businessActivity: '', email: currentUser?.email || ''
       });
     } catch (err) {
       if (err.message === 'Network Error' || !err.response) {
@@ -101,6 +131,86 @@ const BusinessProfileForm = () => {
       setLoading(false);
     }
   };
+
+  // Auth Gatekeeper Check
+  if (authChecked && (!currentUser || currentUser.role !== 'entrepreneur')) {
+    return (
+      <div className="min-h-[85vh] bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center transition-colors">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl shadow-2xl p-8 border border-slate-200 dark:border-slate-800 text-center"
+        >
+          <div className="w-16 h-16 rounded-2xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 mx-auto flex items-center justify-center mb-5 shadow-sm">
+            <Lock size={30} />
+          </div>
+
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 text-xs font-semibold mb-3">
+            <ShieldCheck size={14} />
+            <span>Entrepreneur Authentication Required</span>
+          </div>
+
+          <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">
+            Sign In or Sign Up First
+          </h2>
+
+          <p className="text-slate-600 dark:text-slate-400 text-sm mb-6 leading-relaxed">
+            {currentUser?.role === 'officer'
+              ? `You are signed in as an Officer (${currentUser.email}). Government officers review applications and cannot create business profiles.`
+              : 'Before creating a business profile and generating your regulatory roadmap, please sign in or register with an Entrepreneur account.'}
+          </p>
+
+          {currentUser?.role === 'officer' ? (
+            <div className="space-y-3">
+              <Link
+                to="/officer-dashboard"
+                className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition-all text-sm"
+              >
+                <span>Go to Officer Review Desk</span>
+                <ArrowRight size={16} />
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  localStorage.removeItem('udyogsetu_user');
+                  localStorage.removeItem('udyogsetu_profileId');
+                  navigate('/login?role=entrepreneur&redirect=/start');
+                }}
+                className="w-full inline-flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold py-3 px-4 rounded-xl transition-all text-sm"
+              >
+                <span>Switch to Entrepreneur Account</span>
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <Link
+                to="/login?role=entrepreneur&redirect=/start"
+                className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-blue-500/20 transition-all text-sm"
+              >
+                <LogIn size={16} />
+                <span>Sign In as Entrepreneur</span>
+                <ArrowRight size={16} />
+              </Link>
+
+              <Link
+                to="/login?role=entrepreneur&signup=true&redirect=/start"
+                className="w-full inline-flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 text-slate-800 dark:text-slate-200 font-bold py-3 px-4 rounded-xl transition-all text-sm shadow-sm"
+              >
+                <UserPlus size={16} />
+                <span>Create New Account (Sign Up)</span>
+              </Link>
+
+              <div className="pt-3">
+                <Link to="/" className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 transition-colors">
+                  ← Return to Homepage
+                </Link>
+              </div>
+            </div>
+          )}
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 sm:p-6 lg:p-8 flex flex-col items-center py-10 transition-colors">
@@ -140,6 +250,19 @@ const BusinessProfileForm = () => {
       )}
 
       <div className="max-w-4xl w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-6 sm:p-10 border border-slate-200 dark:border-slate-800 transition-colors">
+        
+        {/* Authenticated user banner */}
+        {currentUser && (
+          <div className="mb-6 px-4 py-2.5 bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/80 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-2 text-blue-900 dark:text-blue-200">
+              <CheckCircle2 size={16} className="text-blue-600 dark:text-blue-400 shrink-0" />
+              <span>Signed in as: <strong className="font-semibold">{currentUser.email}</strong> (Entrepreneur)</span>
+            </div>
+            <span className="text-[11px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/60 px-2 py-0.5 rounded-md uppercase tracking-wider self-start sm:self-auto">
+              Active Intake Session
+            </span>
+          </div>
+        )}
         
         <div className="mb-8 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 text-xs font-semibold mb-3">
